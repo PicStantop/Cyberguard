@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Amara from './characters/Amara'
 import MrObi from './characters/MrObi'
 
-export default function SplashScreen({ onStart }) {
+export default function SplashScreen({ onStart, profile }) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -66,6 +66,11 @@ export default function SplashScreen({ onStart }) {
         <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 8, fontWeight: 600 }}>
           Digital Technology · SS1 · Cybersecurity
         </div>
+        {profile && (
+          <div style={{ marginTop: 8, fontSize: 13, color: '#1D9E75', fontWeight: 800 }}>
+            Welcome back, {profile.full_name.split(' ')[0]}! 👋
+          </div>
+        )}
       </div>
 
       {/* Characters */}
