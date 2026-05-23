@@ -93,7 +93,7 @@ export default function StudentGame() {
               👋 {profile?.full_name || 'Student'}
             </div>
             <div style={{ fontSize: 10, color: '#64748b', fontWeight: 600 }}>
-              {profile?.class_arm} · {profile?.student_id}
+              {profile?.username}
             </div>
           </div>
           <button onClick={signOut} style={{

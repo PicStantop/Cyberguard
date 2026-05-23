@@ -26,49 +26,53 @@ const LABEL_STYLE = {
 }
 
 export default function AuthScreen() {
-  const [tab, setTab]           = useState('login')  // 'login' | 'register' | 'teacher'
-  const [loading, setLoading]   = useState(false)
-  const [error, setError]       = useState('')
+  const [tab, setTab]         = useState('login')   // 'login' | 'register' | 'teacher'
+  const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState('')
   const { signIn, signUp, signInTeacher } = useAuth()
 
   // Login fields
-  const [loginId, setLoginId]   = useState('')
-  const [loginPw, setLoginPw]   = useState('')
+  const [loginUser, setLoginUser] = useState('')
+  const [loginPw, setLoginPw]     = useState('')
 
   // Register fields
-  const [regName, setRegName]   = useState('')
-  const [regId, setRegId]       = useState('')
-  const [regArm, setRegArm]     = useState('SS1A')
-  const [regPw, setRegPw]       = useState('')
-  const [regPw2, setRegPw2]     = useState('')
+  const [regName, setRegName] = useState('')
+  const [regUser, setRegUser] = useState('')
+  const [regPw, setRegPw]     = useState('')
+  const [regPw2, setRegPw2]   = useState('')
 
   // Teacher fields
-  const [tEmail, setTEmail]     = useState('')
-  const [tPw, setTPw]           = useState('')
+  const [tEmail, setTEmail] = useState('')
+  const [tPw, setTPw]       = useState('')
 
   async function handleLogin(e) {
     e.preventDefault()
     setError('')
-    if (!loginId || !loginPw) return setError('Please fill in all fields.')
+    if (!loginUser || !loginPw) return setError('Please fill in all fields.')
     setLoading(true)
     try {
-      await signIn({ studentId: loginId, password: loginPw })
+      await signIn({ username: loginUser, password: loginPw })
     } catch (err) {
-      setError(err.message.includes('Invalid') ? 'Wrong Student ID or password. Try again.' : err.message)
+      setError('Wrong username or password. Try again.')
     } finally { setLoading(false) }
   }
 
   async function handleRegister(e) {
     e.preventDefault()
     setError('')
-    if (!regName || !regId || !regPw) return setError('Please fill in all fields.')
+    if (!regName || !regUser || !regPw) return setError('Please fill in all fields.')
     if (regPw !== regPw2) return setError('Passwords do not match.')
     if (regPw.length < 6) return setError('Password must be at least 6 characters.')
+    if (regUser.trim().length < 3) return setError('Username must be at least 3 characters.')
     setLoading(true)
     try {
-      await signUp({ fullName: regName, studentId: regId, classArm: regArm, password: regPw })
+      await signUp({ fullName: regName, username: regUser, password: regPw })
     } catch (err) {
-      setError(err.message.includes('already registered') ? 'That Student ID is already registered. Please log in.' : err.message)
+      setError(
+        err.message?.includes('already registered')
+          ? 'That username is already taken. Please choose another.'
+          : err.message || 'Registration failed. Try again.'
+      )
     } finally { setLoading(false) }
   }
 
@@ -87,18 +91,19 @@ export default function AuthScreen() {
   return (
     <div style={{
       minHeight: '100dvh',
-      background: 'linear-gradient(160deg, #0f172a 0%, #1a0a3d 50%, #0f172a 100%)',
+      background: 'linear-gradient(160deg,#0f172a 0%,#1a0a3d 50%,#0f172a 100%)',
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       padding: '24px 16px 40px',
     }}>
       {/* Background grid */}
       <div style={{
         position: 'fixed', inset: 0, pointerEvents: 'none',
-        backgroundImage: 'linear-gradient(rgba(29,158,117,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(29,158,117,0.06) 1px, transparent 1px)',
+        backgroundImage: 'linear-gradient(rgba(29,158,117,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(29,158,117,0.06) 1px,transparent 1px)',
         backgroundSize: '32px 32px',
       }} />
 
       <div style={{ width: '100%', maxWidth: 420, position: 'relative' }}>
+
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <div style={{
@@ -133,7 +138,7 @@ export default function AuthScreen() {
           borderRadius: 14, padding: 4, marginBottom: 20,
         }}>
           {[
-            { key: 'login',    label: '🔑 Student Login' },
+            { key: 'login',    label: '🔑 Login' },
             { key: 'register', label: '📝 Register' },
             { key: 'teacher',  label: '👨‍🏫 Teacher' },
           ].map(t => (
@@ -156,35 +161,41 @@ export default function AuthScreen() {
           borderRadius: 20, padding: '24px 20px',
           backdropFilter: 'blur(12px)',
         }}>
-          {/* Error */}
           {error && (
             <div style={{
               background: 'rgba(46,10,10,0.9)', border: '1px solid rgba(226,75,74,0.4)',
               borderRadius: 10, padding: '10px 14px', marginBottom: 16,
               fontSize: 13, color: '#FCA5A5', fontWeight: 600,
-            }}>
-              ⚠ {error}
-            </div>
+            }}>⚠ {error}</div>
           )}
 
           {/* ── Student Login ── */}
           {tab === 'login' && (
             <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label style={LABEL_STYLE}>Student ID</label>
-                <input value={loginId} onChange={e => setLoginId(e.target.value)}
-                  placeholder="e.g. SS1A/001"
-                  style={INPUT_STYLE} autoCapitalize="characters" />
+                <label style={LABEL_STYLE}>Username</label>
+                <input
+                  value={loginUser}
+                  onChange={e => setLoginUser(e.target.value)}
+                  placeholder="e.g. amara01"
+                  style={INPUT_STYLE}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                />
               </div>
               <div>
                 <label style={LABEL_STYLE}>Password</label>
-                <input type="password" value={loginPw} onChange={e => setLoginPw(e.target.value)}
+                <input
+                  type="password"
+                  value={loginPw}
+                  onChange={e => setLoginPw(e.target.value)}
                   placeholder="Your password"
-                  style={INPUT_STYLE} />
+                  style={INPUT_STYLE}
+                />
               </div>
               <SubmitButton loading={loading} label="Log In 🚀" />
               <p style={{ textAlign: 'center', fontSize: 12, color: '#64748b', marginTop: 4 }}>
-                New student?{' '}
+                No account?{' '}
                 <button type="button" onClick={() => setTab('register')} style={{
                   background: 'none', border: 'none', color: '#1D9E75',
                   fontWeight: 700, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
@@ -198,38 +209,46 @@ export default function AuthScreen() {
             <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
                 <label style={LABEL_STYLE}>Full Name</label>
-                <input value={regName} onChange={e => setRegName(e.target.value)}
+                <input
+                  value={regName}
+                  onChange={e => setRegName(e.target.value)}
                   placeholder="e.g. Amara Okafor"
-                  style={INPUT_STYLE} />
+                  style={INPUT_STYLE}
+                />
               </div>
               <div>
-                <label style={LABEL_STYLE}>Student ID</label>
-                <input value={regId} onChange={e => setRegId(e.target.value)}
-                  placeholder="e.g. SS1A/001"
-                  style={INPUT_STYLE} autoCapitalize="characters" />
-              </div>
-              <div>
-                <label style={LABEL_STYLE}>Class</label>
-                <select value={regArm} onChange={e => setRegArm(e.target.value)} style={{
-                  ...INPUT_STYLE,
-                  appearance: 'none', cursor: 'pointer',
-                }}>
-                  {['SS1A', 'SS1B', 'SS1C', 'SS1D', 'SS1E', 'SS1F'].map(c => (
-                    <option key={c} value={c} style={{ background: '#1e293b' }}>{c}</option>
-                  ))}
-                </select>
+                <label style={LABEL_STYLE}>Username</label>
+                <input
+                  value={regUser}
+                  onChange={e => setRegUser(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                  placeholder="e.g. amara01  (letters & numbers only)"
+                  style={INPUT_STYLE}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                />
+                <div style={{ fontSize: 11, color: '#475569', marginTop: 5, fontWeight: 600 }}>
+                  Only letters, numbers, and underscores. No spaces.
+                </div>
               </div>
               <div>
                 <label style={LABEL_STYLE}>Password</label>
-                <input type="password" value={regPw} onChange={e => setRegPw(e.target.value)}
+                <input
+                  type="password"
+                  value={regPw}
+                  onChange={e => setRegPw(e.target.value)}
                   placeholder="Min. 6 characters"
-                  style={INPUT_STYLE} />
+                  style={INPUT_STYLE}
+                />
               </div>
               <div>
                 <label style={LABEL_STYLE}>Confirm Password</label>
-                <input type="password" value={regPw2} onChange={e => setRegPw2(e.target.value)}
-                  placeholder="Repeat password"
-                  style={INPUT_STYLE} />
+                <input
+                  type="password"
+                  value={regPw2}
+                  onChange={e => setRegPw2(e.target.value)}
+                  placeholder="Repeat your password"
+                  style={INPUT_STYLE}
+                />
               </div>
               <SubmitButton loading={loading} label="Create Account ✅" />
               <p style={{ textAlign: 'center', fontSize: 12, color: '#64748b', marginTop: 4 }}>
@@ -250,20 +269,32 @@ export default function AuthScreen() {
                 border: '1px solid rgba(83,74,183,0.2)',
                 borderRadius: 10, padding: '10px 14px', marginBottom: 4,
               }}>
-                <div style={{ fontSize: 12, color: '#a5b4fc', fontWeight: 700, marginBottom: 3 }}>👨‍🏫 Teacher Portal</div>
-                <div style={{ fontSize: 11.5, color: '#6366f1' }}>Teacher accounts are created by the administrator. Contact your school IT admin for access.</div>
+                <div style={{ fontSize: 12, color: '#a5b4fc', fontWeight: 700, marginBottom: 3 }}>
+                  👨‍🏫 Teacher Portal
+                </div>
+                <div style={{ fontSize: 11.5, color: '#6366f1' }}>
+                  Use the email and password you created via the Supabase setup.
+                </div>
               </div>
               <div>
                 <label style={LABEL_STYLE}>Email Address</label>
-                <input type="email" value={tEmail} onChange={e => setTEmail(e.target.value)}
+                <input
+                  type="email"
+                  value={tEmail}
+                  onChange={e => setTEmail(e.target.value)}
                   placeholder="teacher@school.edu.ng"
-                  style={INPUT_STYLE} />
+                  style={INPUT_STYLE}
+                />
               </div>
               <div>
                 <label style={LABEL_STYLE}>Password</label>
-                <input type="password" value={tPw} onChange={e => setTPw(e.target.value)}
+                <input
+                  type="password"
+                  value={tPw}
+                  onChange={e => setTPw(e.target.value)}
                   placeholder="Your password"
-                  style={INPUT_STYLE} />
+                  style={INPUT_STYLE}
+                />
               </div>
               <SubmitButton loading={loading} label="Access Dashboard 📊" color="#534AB7" />
             </form>
@@ -279,7 +310,7 @@ function SubmitButton({ loading, label, color = '#1D9E75' }) {
   return (
     <button type="submit" disabled={loading} style={{
       width: '100%', padding: '14px',
-      background: loading ? 'rgba(148,163,184,0.2)' : `linear-gradient(135deg, ${color}, ${darker})`,
+      background: loading ? 'rgba(148,163,184,0.2)' : `linear-gradient(135deg,${color},${darker})`,
       border: 'none', borderRadius: 12, fontSize: 15,
       fontWeight: 800, color: loading ? '#64748b' : '#fff',
       fontFamily: 'Nunito, sans-serif', cursor: loading ? 'not-allowed' : 'pointer',

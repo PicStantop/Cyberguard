@@ -25,7 +25,7 @@ export default function TeacherDashboard() {
       .from('profiles')
       .select('*')
       .eq('role', 'student')
-      .order('class_arm')
+      .order('full_name')
 
     const { data: sess } = await supabase
       .from('game_sessions')
@@ -41,10 +41,10 @@ export default function TeacherDashboard() {
 
   // ── Derived stats ──────────────────────────────────────────────────────────
 
-  const classes = ['All', ...new Set((students || []).map(s => s.class_arm).filter(Boolean))]
+  // class filter removed
 
   const filteredStudents = (students || []).filter(s =>
-    filterClass === 'All' || s.class_arm === filterClass
+    true
   )
 
   // Per-student last session stats
@@ -144,19 +144,10 @@ export default function TeacherDashboard() {
 
       <div style={{ padding: '16px 14px 40px', maxWidth: 900, margin: '0 auto' }}>
 
-        {/* ── Class filter ── */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: '#64748b', fontWeight: 700 }}>Class:</span>
-          {classes.map(c => (
-            <button key={c} onClick={() => setFilterClass(c)} style={{
-              padding: '5px 14px', borderRadius: 20, border: 'none',
-              background: filterClass === c ? '#1D9E75' : 'rgba(30,41,59,0.8)',
-              color: filterClass === c ? '#fff' : '#94a3b8',
-              fontSize: 12, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer',
-            }}>{c}</button>
-          ))}
+        {/* ── Refresh ── */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
           <button onClick={loadData} style={{
-            marginLeft: 'auto', padding: '5px 12px', borderRadius: 8,
+            padding: '6px 14px', borderRadius: 8,
             background: 'rgba(30,41,59,0.8)',
             border: '1px solid rgba(148,163,184,0.15)',
             color: '#94a3b8', fontSize: 12, fontWeight: 700,
@@ -242,7 +233,7 @@ export default function TeacherDashboard() {
                           {student?.full_name || 'Unknown Student'}
                         </div>
                         <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>
-                          {student?.class_arm} · {student?.student_id}
+                          {student?.username}
                         </div>
                       </div>
                       <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -377,7 +368,7 @@ export default function TeacherDashboard() {
                           <div style={{ flex: 1 }}>
                             <div style={{ fontSize: 14, fontWeight: 800, color: '#e2e8f0' }}>{student.full_name}</div>
                             <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>
-                              {student.class_arm} · {student.student_id}
+                              {student.username}
                             </div>
                           </div>
                           <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -450,7 +441,7 @@ function StudentDetail({ student, stats, onBack }) {
           {student.full_name}
         </div>
         <div style={{ fontSize: 12, color: '#64748b', fontWeight: 700, marginBottom: 14 }}>
-          {student.class_arm} · {student.student_id}
+          {student.username}
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
           {[
