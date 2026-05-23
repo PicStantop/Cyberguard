@@ -30,27 +30,34 @@ export function AuthProvider({ children }) {
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single()
-      if (error) { console.error('Profile fetch error:', error); setProfile(null) }
-      else setProfile(data)
+        .maybeSingle()   // maybeSingle() returns null (not error) when no row found
+
+      if (error) {
+        console.error('Profile fetch error:', error.message)
+        setProfile(null)
+      } else {
+        setProfile(data) // null if no row, object if found
+      }
     } catch (err) {
-      console.error('Profile fetch failed:', err); setProfile(null)
+      console.error('Profile fetch exception:', err)
+      setProfile(null)
     } finally {
       setLoading(false)
     }
   }
 
   async function signUp({ fullName, username, password }) {
-    // Username becomes the email prefix for Supabase auth
     const safeUser = username.toLowerCase().trim().replace(/[^a-z0-9_]/g, '')
     const email    = `${safeUser}@cyberguard.app`
 
     const { data, error } = await supabase.auth.signUp({
-      email, password,
+      email,
+      password,
       options: { data: { full_name: fullName.trim(), username: safeUser } }
     })
     if (error) throw error
 
+    // Insert profile row
     const { error: profileError } = await supabase.from('profiles').insert({
       id:        data.user.id,
       full_name: fullName.trim(),
