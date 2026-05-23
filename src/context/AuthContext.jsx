@@ -45,7 +45,10 @@ export function AuthProvider({ children }) {
     const safeUser = username.toLowerCase().trim().replace(/[^a-z0-9_]/g, '')
     const email    = `${safeUser}@cyberguard.app`
 
-    const { data, error } = await supabase.auth.signUp({ email, password })
+    const { data, error } = await supabase.auth.signUp({
+      email, password,
+      options: { data: { full_name: fullName.trim(), username: safeUser } }
+    })
     if (error) throw error
 
     const { error: profileError } = await supabase.from('profiles').insert({
