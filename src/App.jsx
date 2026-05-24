@@ -62,30 +62,6 @@ function AppRoutes() {
             Could not load your profile
           </div>
 
-          {/* Show the real error message */}
-          {profileError && (
-            <div style={{
-              background: 'rgba(46,10,10,0.8)',
-              border: '1px solid rgba(226,75,74,0.3)',
-              borderRadius: 10, padding: '10px 16px',
-              maxWidth: 360, width: '100%',
-            }}>
-              <div style={{ fontSize: 11, color: '#f87171', fontWeight: 800, marginBottom: 4 }}>
-                Error details:
-              </div>
-              <div style={{ fontSize: 12, color: '#fca5a5', fontFamily: 'monospace', lineHeight: 1.6 }}>
-                {profileError}
-              </div>
-            </div>
-          )}
-
-          <div style={{ fontSize: 13, color: '#64748b', textAlign: 'center', lineHeight: 1.7, maxWidth: 320 }}>
-            Most common cause: <strong style={{ color: '#fcd34d' }}>email confirmation is ON</strong> in Supabase.<br/>
-            <span style={{ color: '#a5b4fc' }}>
-              Authentication → Providers → Email → turn off "Confirm email" → Save
-            </span>
-          </div>
-
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 300 }}>
             <button onClick={retrying ? null : handleRetry} style={{
               padding: 12, borderRadius: 12, border: 'none',
