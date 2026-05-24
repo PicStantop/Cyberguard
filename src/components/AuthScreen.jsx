@@ -84,7 +84,7 @@ export default function AuthScreen() {
     try {
       await signInTeacher({ email: tEmail, password: tPw })
     } catch (err) {
-      setError('Wrong email or password.')
+      setError(err.message || 'Login failed. Check your email and password.')
     } finally { setLoading(false) }
   }
 

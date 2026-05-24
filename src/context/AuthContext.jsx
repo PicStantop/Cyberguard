@@ -4,9 +4,10 @@ import { supabase } from '../lib/supabase'
 const AuthContext = createContext({})
 
 export function AuthProvider({ children }) {
-  const [user, setUser]       = useState(null)
-  const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser]           = useState(null)
+  const [profile, setProfile]     = useState(null)
+  const [loading, setLoading]     = useState(true)
+  const [profileError, setProfileError] = useState(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -18,28 +19,31 @@ export function AuthProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) fetchProfile(session.user.id)
-      else { setProfile(null); setLoading(false) }
+      else { setProfile(null); setProfileError(null); setLoading(false) }
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
   async function fetchProfile(userId) {
+    setProfileError(null)
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .maybeSingle()   // maybeSingle() returns null (not error) when no row found
+        .maybeSingle()
 
       if (error) {
         console.error('Profile fetch error:', error.message)
+        setProfileError(error.message)
         setProfile(null)
       } else {
-        setProfile(data) // null if no row, object if found
+        setProfile(data)  // null if no row exists
       }
     } catch (err) {
       console.error('Profile fetch exception:', err)
+      setProfileError(err.message || 'Unknown error')
       setProfile(null)
     } finally {
       setLoading(false)
@@ -57,7 +61,6 @@ export function AuthProvider({ children }) {
     })
     if (error) throw error
 
-    // Insert profile row
     const { error: profileError } = await supabase.from('profiles').insert({
       id:        data.user.id,
       full_name: fullName.trim(),
@@ -86,10 +89,14 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
     setUser(null)
     setProfile(null)
+    setProfileError(null)
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signUp, signIn, signInTeacher, signOut, fetchProfile }}>
+    <AuthContext.Provider value={{
+      user, profile, loading, profileError,
+      signUp, signIn, signInTeacher, signOut, fetchProfile
+    }}>
       {children}
     </AuthContext.Provider>
   )
